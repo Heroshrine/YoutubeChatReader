@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeChatRead", "YoutubeChatRead\YoutubeChatRead.csproj", "{84821E2D-6D0F-474E-8CC7-2D4135E63E98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing", "Parsing\Parsing.csproj", "{EFD3E92B-3CC3-40AD-8BB0-ADC5DA08E2A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84821E2D-6D0F-474E-8CC7-2D4135E63E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84821E2D-6D0F-474E-8CC7-2D4135E63E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84821E2D-6D0F-474E-8CC7-2D4135E63E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84821E2D-6D0F-474E-8CC7-2D4135E63E98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFD3E92B-3CC3-40AD-8BB0-ADC5DA08E2A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFD3E92B-3CC3-40AD-8BB0-ADC5DA08E2A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFD3E92B-3CC3-40AD-8BB0-ADC5DA08E2A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFD3E92B-3CC3-40AD-8BB0-ADC5DA08E2A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
