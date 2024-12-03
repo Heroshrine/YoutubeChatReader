@@ -43,12 +43,10 @@ public sealed partial class PythonJob : IDisposable
     private readonly StreamWriter _pyWriter;
     private readonly StreamReader _pyReader;
 
-    private readonly string _pythonPathExe;
     private readonly string _pythonPathMain;
 
-    public PythonJob(string pythonPathExe, string pythonPathMain, int ttsWpm)
+    public PythonJob(string pythonPathMain, int ttsWpm)
     {
-        _pythonPathExe = pythonPathExe;
         _pythonPathMain = pythonPathMain;
 
         CreateJob();
@@ -121,14 +119,14 @@ public sealed partial class PythonJob : IDisposable
             RedirectStandardError = true
         });
 
-        // var _alt = Process.Start(new ProcessStartInfo
-        // {
-        //     FileName = "py",
-        //     Arguments = _pythonPathMain,
-        //     UseShellExecute = true,
-        // });
-        //
-        // _alt.WaitForExit();
+        var _alt = Process.Start(new ProcessStartInfo
+        {
+            FileName = "py",
+            Arguments = _pythonPathMain,
+            UseShellExecute = true,
+        });
+
+        _alt.WaitForExit();
 
         if (AssignProcessToJobObject(_jobHandle, _pythonProcess!.Handle)) return;
 
@@ -145,7 +143,7 @@ public sealed partial class PythonJob : IDisposable
     public async Task<string?> ReadPythonOutput()
     {
         var result = await _pyReader.ReadLineAsync();
-        if (result != null && (_pythonProcess == null || _pythonProcess.HasExited) && _pythonProcess?.ExitCode != 0)
+        if ((_pythonProcess == null || _pythonProcess.HasExited) && _pythonProcess?.ExitCode != 0)
             result = $"\e[0;91m{result}";
         return result;
     }

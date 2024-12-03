@@ -36,7 +36,7 @@ internal class App
         _apiKey = apiKey;
         _debugOptions = debugOptions;
 
-        _pythonJob = new PythonJob(pythonPathExe, pythonPathMain, pyTtsWpm);
+        _pythonJob = new PythonJob(pythonPathMain, pyTtsWpm);
         _pythonResponseTask = _pythonJob.ReadPythonOutput();
     }
 
@@ -83,9 +83,10 @@ internal class App
             var allTasks = new List<Task>(_processTasks!)
             {
                 _readTask!,
-                _inputTask
+                _inputTask,
+                _pythonResponseTask
             };
-            // await Task.WhenAny(allTasks);
+            await Task.WhenAny(allTasks);
         }
     }
 

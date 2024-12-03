@@ -43,7 +43,7 @@ internal sealed partial class ChatReader(
     {
         if (string.IsNullOrWhiteSpace(_liveChatId))
         {
-            await SetupLiveChatId(_videoId);
+            await SetupLiveChatId();
             _currentDelay = _desiredDelay;
             await FileManager.WriteLog("Initialized ChatReader");
         }
@@ -138,10 +138,18 @@ internal sealed partial class ChatReader(
     }
 
     // sets _liveChatId to the correct ID for API calls.
-    private async Task SetupLiveChatId(string videoId)
+    private async Task SetupLiveChatId()
     {
         var response = await _client.GetAsync(VideoApiUrl, _cancellationToken);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception)
+        {
+            await App.WriteWarningAndLog("Make sure your API key is set! Failure to retrieve live video ID.");
+            throw;
+        }
 
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(_cancellationToken));
         if (!json.RootElement.TryGetProperty("items", out var items))
@@ -150,7 +158,7 @@ internal sealed partial class ChatReader(
 
         if (items.GetArrayLength() <= 0)
             throw new InvalidOperationException(
-                $"Items length was 0. Was the correct ID used? {{{videoId}}}");
+                $"Items length was 0. Was the correct ID used? {{{_videoId}}}");
 
         if (!items[0].TryGetProperty("liveStreamingDetails", out var details))
             throw new InvalidOperationException("The video ID provided is not a live stream!");

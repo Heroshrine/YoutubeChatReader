@@ -30,11 +30,8 @@ def main():
 
             elif commands[0] == "key":
                 simulate_keypress(commands[1].split("+"))
-                print(f"Pressed key [{commands[1]}]")
                 if len(commands) > 2:
                     speak(commands[2])
-                    print(f"TTS: '{commands[2]}'")
-                sys.stdout.flush()
 
             elif commands[0] == "wpm":
                 tts_engine.setProperty('rate', int(commands[1]))
