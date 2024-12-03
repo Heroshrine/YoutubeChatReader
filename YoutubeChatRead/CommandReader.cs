@@ -19,7 +19,7 @@ internal static class CommandReader
         + $"{Environment.NewLine}\e[0;92myoutube\e[0;37m"
         + "\tvideo read - prints the currently used video ID."
         + Environment.NewLine + Environment.NewLine
-        + "\e[0;37mExample: \e[0;92mconfig\e[0;37m load \e[0;95mTheBestConfig.txt"
+        + "\e[0;37mExample: \e[0;92mconfig\e[0;37m load \e[0;95mfoo.txt"
         + Environment.NewLine;
 
     public static async Task DoAction(string? fullCommand, App app)

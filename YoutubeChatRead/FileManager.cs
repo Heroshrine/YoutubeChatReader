@@ -13,8 +13,7 @@ public static class FileManager
     public const string SETTINGS_DELAY = "Delay";
     public const string SETTINGS_MAX_RESULTS = "Max Results";
     public const string SETTINGS_API_KEY = "API Key";
-    public const string SETTINGS_CHANNEL_NAME = "Channel Name";
-    public const string INACTIVE_RETRY_DELAY = "No Livestream Retry Delay";
+    public const string TTS_READ_SPEED = "Text To Speach WPM";
 
     public static DebugOptions debugOptions;
 
@@ -27,7 +26,7 @@ public static class FileManager
     private static readonly string LogPath = Path.Join(DirectoryPath, LogPathRelative);
 
     private static string TemplateString =>
-        $"A: Word1 Word2 Word3{Environment.NewLine}B: \"Word with spaces\" \"CapItaliZATion doesn't MaTter\"{Environment.NewLine}C: ... 123";
+        $"A : Word1 Word2 Word3 : Some Text To Speach{Environment.NewLine}B : \"Word with spaces\" \"CapItaliZATion doesn't MaTter\" : wow!{Environment.NewLine}C : ... 123 : ???";
 
     public static string DirectoryPath =>
         Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), DIRECTORY_NAME);
@@ -135,6 +134,7 @@ public static class FileManager
         var delay = JsonSerializer.SerializeToElement(ChatReader.DEFAULT_CHAT_DELAY);
         var maxResults = JsonSerializer.SerializeToElement(ChatReader.DEFAULT_MAX_RESULTS);
         var apiKey = JsonSerializer.SerializeToElement("API KEY HERE");
+        var ttsSpeed = JsonSerializer.SerializeToElement(PythonInterOp.PythonJob.TTS_WPM);
 
         using var stream = new MemoryStream();
         await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
@@ -152,6 +152,9 @@ public static class FileManager
 
         writer.WritePropertyName(SETTINGS_API_KEY);
         apiKey.WriteTo(writer);
+
+        writer.WritePropertyName(TTS_READ_SPEED);
+        ttsSpeed.WriteTo(writer);
 
         writer.WriteEndObject();
 
@@ -207,20 +210,22 @@ public static class FileManager
         var fileText = await File.ReadAllTextAsync(Path.Combine(DirectoryPath, relativePath));
 
         var lines = fileText.Split(Environment.NewLine);
-        (string letter, ReadOnlyMemory<string> words)[] parsedFileLines =
-            new (string, ReadOnlyMemory<string>)[lines.Length];
+        (string letter, ReadOnlyMemory<string> words, string speach)[] parsedFileLines =
+            new (string, ReadOnlyMemory<string>, string speach)[lines.Length];
 
         for (var i = 0; i < lines.Length; i++)
         {
             ReadOnlySpan<string> split = lines[i].QuickSplit(':').Span;
 
-            if (split.Length != 2)
-                throw new FormatException("Invalid file format! Format expected is: 'A: Word1, Word2, ...'");
+            if (split.Length != 3)
+                throw new FormatException(
+                    "Invalid file format! Format expected is: 'A : Word1 Word2 ... : Text To Speach'");
 
-            parsedFileLines[i] = (split[0], split[1].QuickSplit(' ', '"'));
+            parsedFileLines[i] = (split[0].Trim(), split[1].Trim().QuickSplit(' ', '"'), split[2].Trim());
         }
 
-        ReadOnlySpan<(string letter, ReadOnlyMemory<string> words)> readyKeywords = parsedFileLines.AsSpan();
+        ReadOnlySpan<(string letter, ReadOnlyMemory<string> words, string speach)> readyKeywords =
+            parsedFileLines.AsSpan();
         Memory<KeywordPair> result = new KeywordPair[readyKeywords.Length];
         Span<KeywordPair> resultSpan = result.Span;
 
@@ -235,7 +240,7 @@ public static class FileManager
                 usableWordsSpan[j] = oldWords[j].Replace(" ", "").Replace("\"", "").ToLower();
             }
 
-            resultSpan[i] = new KeywordPair(readyKeywords[i].letter, usableWords);
+            resultSpan[i] = new KeywordPair(readyKeywords[i].letter, usableWords, readyKeywords[i].speach);
         }
 
         return result;
@@ -246,4 +251,10 @@ public static class FileManager
         FileName = DirectoryPath,
         UseShellExecute = true
     });
+
+    public static async Task ResetSettings()
+    {
+        await CreateSettingsFile(Path.Combine(DirectoryPath, SETTINGS_FILE_NAME));
+        Console.WriteLine("\e[0;37mSettings file recreated, please reenter your API key.");
+    }
 }

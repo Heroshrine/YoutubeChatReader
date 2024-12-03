@@ -36,7 +36,7 @@ public class ChatInterpreter : IDisposable
         _cancellationTokenSource.Dispose();
     }
 
-    internal async Task<ReadOnlyMemory<(string, Queue<MessageInfo>)>> FindWords(FetchedMessages fetchedMessages)
+    internal async Task<ReadOnlyMemory<(string, string, Queue<MessageInfo>)>> FindWords(FetchedMessages fetchedMessages)
     {
         ReadOnlyMemory<MessageInfo> readableOldMessages = fetchedMessages.oldMessages.Length >= _longestKeywordLength
             ? fetchedMessages.oldMessages[^_longestKeywordLength..]
@@ -81,8 +81,9 @@ public class ChatInterpreter : IDisposable
         ReadOnlySpan<(bool found, Queue<MessageInfo>? from, DateTime timestamp)>
             taskResults = await Task.WhenAll(tasks);
         keywordsSpan = _keywords.Span;
-        Memory<(string, Queue<MessageInfo>?)> keys = new (string, Queue<MessageInfo>?)[taskResults.Length];
-        Span<(string, Queue<MessageInfo>?)> keysSpan = keys.Span;
+        Memory<(string, string, Queue<MessageInfo>?)> keys =
+            new (string, string, Queue<MessageInfo>?)[taskResults.Length];
+        Span<(string, string, Queue<MessageInfo>?)> keysSpan = keys.Span;
         for (var (i, j) = (0, 0); i < taskResults.Length; i++)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
@@ -92,7 +93,7 @@ public class ChatInterpreter : IDisposable
 
             if (taskResults[i].timestamp > _lastFound)
                 _lastFound = taskResults[i].timestamp;
-            keysSpan[j++] = (keywordsSpan[i].key, taskResults[i].from);
+            keysSpan[j++] = (keywordsSpan[i].key, keywordsSpan[i].speach, taskResults[i].from);
         }
 
         return keys.Trim([default])!;
@@ -103,9 +104,8 @@ public class ChatInterpreter : IDisposable
     {
         if (words.Length == 0 || usingMessages.Span.Length == 0)
         {
-            FileManager.WriteLog($"[WARNING] Something potentially went wrong in {nameof(FindWordInMessages)}:" +
-                                 $"{nameof(words)} Length: {{{words.Length}}}, {nameof(usingMessages)} Length: {{{usingMessages.Length}}}")
-                .RunSynchronously();
+            await FileManager.WriteLog($"[WARNING] Something potentially went wrong in {nameof(FindWordInMessages)}:" +
+                                       $"{nameof(words)} Length: {{{words.Length}}}, {nameof(usingMessages)} Length: {{{usingMessages.Length}}}");
             return (false, null, DateTime.MinValue);
         }
 

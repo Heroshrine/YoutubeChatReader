@@ -2,10 +2,11 @@
 
 namespace YoutubeChatRead;
 
-public record KeywordPair(string key, ReadOnlyMemory<string> words)
+public record KeywordPair(string key, ReadOnlyMemory<string> words, string speach)
 {
     public readonly string key = key;
     public readonly ReadOnlyMemory<string> words = words;
+    public readonly string speach = speach;
 
     public override string ToString()
     {

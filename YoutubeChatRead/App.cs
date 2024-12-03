@@ -2,27 +2,43 @@
 using System.Text;
 using System.Text.Json;
 using Parsing;
+using YoutubeChatRead.PythonInterOp;
 
 namespace YoutubeChatRead;
 
 using FileManagement;
 
-internal class App(int delay, int maxResults, string apiKey, DebugOptions debugOptions)
+internal class App
 {
     public const string VERSION = "0.2.0";
-    private readonly List<Task<ReadOnlyMemory<(string, Queue<MessageInfo>)>>?> _processTasks = [];
+    private readonly List<Task<ReadOnlyMemory<(string, string, Queue<MessageInfo>)>>?> _processTasks = [];
     private Task<(FetchedMessages?, string exitMessage, int exitCode)>? _readTask;
     private Task<string?>? _inputTask;
+    private Task<string?> _pythonResponseTask;
 
-    private readonly string _apiKey = apiKey;
-    private readonly int _delay = delay;
-    private readonly int _maxResults = maxResults;
+    private readonly string _apiKey;
+    private readonly int _delay;
+    private readonly int _maxResults;
 
-    private readonly DebugOptions _debugOptions = debugOptions;
+    private readonly PythonJob _pythonJob;
+
+    private readonly DebugOptions _debugOptions;
     private ChatInterpreter? _chatInterpreter;
     private ChatReader? _chatReader;
 
     private CancellationTokenSource _readStopSource = new();
+
+    public App(int delay, int maxResults, string apiKey, DebugOptions debugOptions, string pythonPathExe,
+        string pythonPathMain, int pyTtsWpm)
+    {
+        _delay = delay;
+        _maxResults = maxResults;
+        _apiKey = apiKey;
+        _debugOptions = debugOptions;
+
+        _pythonJob = new PythonJob(pythonPathExe, pythonPathMain, pyTtsWpm);
+        _pythonResponseTask = _pythonJob.ReadPythonOutput();
+    }
 
     public async Task Start()
     {
@@ -31,6 +47,14 @@ internal class App(int delay, int maxResults, string apiKey, DebugOptions debugO
 
         while (true)
         {
+            if (_pythonResponseTask.IsCompleted)
+            {
+                var result = await _pythonResponseTask;
+                Console.WriteLine($"\e[0;34m[PYTHON]\e[0;37m {result}");
+                InputReceiver.PrintIndicator();
+                _pythonResponseTask = _pythonJob.ReadPythonOutput();
+            }
+
             if (_inputTask.IsCompleted)
             {
                 try
@@ -53,15 +77,15 @@ internal class App(int delay, int maxResults, string apiKey, DebugOptions debugO
 
             if (_processTasks.Any(t => t is null))
                 WriteError("Null process task?");
-            if (_readTask is null)
-                WriteError("Null read task?");
+            // if (_readTask is null)
+            //     WriteError("Null read task?");
 
             var allTasks = new List<Task>(_processTasks!)
             {
                 _readTask!,
                 _inputTask
             };
-            await Task.WhenAny(allTasks);
+            // await Task.WhenAny(allTasks);
         }
     }
 
@@ -79,7 +103,7 @@ internal class App(int delay, int maxResults, string apiKey, DebugOptions debugO
                 _processTasks.Add(_chatInterpreter!.FindWords(fetched));
         }
 
-        bool workDone = false;
+        var workDone = false;
         for (var i = 0; i < _processTasks.Count; i++)
         {
             if (_processTasks[i] is null)
@@ -91,19 +115,17 @@ internal class App(int delay, int maxResults, string apiKey, DebugOptions debugO
 
             if (!_processTasks[i]!.IsCompleted) continue;
 
-            ReadOnlyMemory<(string keypress, Queue<MessageInfo> messages)> result = await _processTasks[i]!;
+            ReadOnlyMemory<(string keypress, string, Queue<MessageInfo> messages)> result = await _processTasks[i]!;
 
-            foreach ((var key, Queue<MessageInfo> messages) in result.ToArray())
+            foreach ((var key, var speach, Queue<MessageInfo> messages) in result.ToArray())
             {
+                await _pythonJob.SendCommand($"KEY:{key}:{speach}");
                 await PrintKeyword(key, messages);
                 workDone = true;
             }
 
             _processTasks.RemoveAt(i);
             i--;
-
-            //TODO: call python code with string
-            //TODO: make keywords also have text to say for tts
         }
 
         if (_inputTask is not null && !_inputTask.IsCompleted && workDone)
