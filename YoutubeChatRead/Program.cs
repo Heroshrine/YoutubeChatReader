@@ -2,11 +2,12 @@
 using System.Text.Json;
 using YoutubeChatRead;
 using YoutubeChatRead.FileManagement;
+using YoutubeChatRead.PythonInterOp;
 
-var delay = int.MaxValue;
-var maxResults = 0;
+var delay = ChatReader.DEFAULT_CHAT_DELAY;
+var maxResults = ChatReader.DEFAULT_MAX_RESULTS;
 string? apiKey = null;
-var ttpWpm = 200;
+var ttpWpm = PythonJob.DEFAULT_TTS_WPM;
 try
 {
     var jsonDocument = await FileManager.LoadSettingsFile();

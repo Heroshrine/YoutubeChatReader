@@ -7,7 +7,7 @@ namespace YoutubeChatRead.PythonInterOp;
 
 public sealed partial class PythonJob : IDisposable
 {
-    public const int TTS_WPM = 160;
+    public const int DEFAULT_TTS_WPM = 180;
 
     [LibraryImport("kernel32.dll", EntryPoint = "CreateJobObjectW", SetLastError = true,
         StringMarshalling = StringMarshalling.Utf16)]

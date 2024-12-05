@@ -134,7 +134,7 @@ public static class FileManager
         var delay = JsonSerializer.SerializeToElement(ChatReader.DEFAULT_CHAT_DELAY);
         var maxResults = JsonSerializer.SerializeToElement(ChatReader.DEFAULT_MAX_RESULTS);
         var apiKey = JsonSerializer.SerializeToElement("API KEY HERE");
-        var ttsSpeed = JsonSerializer.SerializeToElement(PythonInterOp.PythonJob.TTS_WPM);
+        var ttsSpeed = JsonSerializer.SerializeToElement(PythonInterOp.PythonJob.DEFAULT_TTS_WPM);
 
         using var stream = new MemoryStream();
         await using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
