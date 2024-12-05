@@ -73,7 +73,7 @@ try
     if (!FileManager.FilesExist())
     {
         FileManager.CreateTemplateFile();
-        Console.Write("\e[0;37mPress any key once you've set up the config file.");
+        Console.WriteLine("\e[0;37mPress any key once you've set up the config file.");
         Console.ReadKey(true);
         Console.WriteLine();
     }
