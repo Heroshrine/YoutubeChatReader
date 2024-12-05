@@ -56,7 +56,13 @@ public sealed partial class PythonJob : IDisposable
 
         _pyWriter.WriteLine($"WPM:{ttsWpm}");
 
-        Console.WriteLine($"\e[0;34m[Python] \e[0;92m{_pyReader.ReadLine()}{Environment.NewLine}");
+        var response = _pyReader.ReadLine();
+
+        if (string.IsNullOrEmpty(response))
+            throw new ExternalException(
+                "Python script did not signal successful start, perhaps it's executing in the wrong directory?");
+
+        Console.WriteLine($"\e[0;34m[Python] \e[0;92m{response}{Environment.NewLine}");
     }
 
     private void CreateJob()
@@ -119,14 +125,14 @@ public sealed partial class PythonJob : IDisposable
             RedirectStandardError = true
         });
 
-        var _alt = Process.Start(new ProcessStartInfo
-        {
-            FileName = "py",
-            Arguments = _pythonPathMain,
-            UseShellExecute = true,
-        });
-
-        _alt.WaitForExit();
+        // var _alt = Process.Start(new ProcessStartInfo
+        // {
+        //     FileName = "py",
+        //     Arguments = _pythonPathMain,
+        //     UseShellExecute = true,
+        // });
+        //
+        // _alt.WaitForExit();
 
         if (AssignProcessToJobObject(_jobHandle, _pythonProcess!.Handle)) return;
 

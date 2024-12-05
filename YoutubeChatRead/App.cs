@@ -28,7 +28,7 @@ internal class App
 
     private CancellationTokenSource _readStopSource = new();
 
-    public App(int delay, int maxResults, string apiKey, DebugOptions debugOptions, string pythonPathExe,
+    public App(int delay, int maxResults, string apiKey, DebugOptions debugOptions,
         string pythonPathMain, int pyTtsWpm)
     {
         _delay = delay;

@@ -36,8 +36,7 @@ catch (KeyNotFoundException keyNotFoundExcept)
 }
 
 var debugOptions = DebugOptions.None;
-var pythonPathExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"YoutubeChatRead\Python\python.exe");
-var pythonPathMain = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"YoutubeChatRead\Python\main.py");
+var pythonPathMain = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "main.py");
 foreach (var arg in args)
 {
     if (arg.StartsWith('-'))
@@ -48,8 +47,6 @@ foreach (var arg in args)
         {
             replaced = replaced.Replace("ppath=", "");
             replaced = replaced.Replace("p=", "");
-
-            pythonPathExe = Path.Combine(replaced, "python.exe");
             pythonPathMain = Path.Combine(replaced, "main.py");
 
             continue;
@@ -68,7 +65,9 @@ foreach (var arg in args)
 
 try
 {
-    var app = new App(delay, maxResults, apiKey, debugOptions, pythonPathExe, pythonPathMain, ttpWpm);
+    var app = new App(delay, maxResults, apiKey, debugOptions, pythonPathMain, ttpWpm);
+
+    await FileManager.WriteLog($"python execution path: {pythonPathMain}");
 
     if (!FileManager.FilesExist())
     {
@@ -96,10 +95,13 @@ try
 }
 catch (ExternalException e)
 {
-    await App.WriteWarningAndLog(
-        $"Encountered error starting pythong script.{Environment.NewLine}\tEnsure that python was added to PATH when installing.{Environment.NewLine}\tEnsure that pyttsx3 is installed with <pip install pyttsx3>.{Environment.NewLine}\tEnsure that pyautogui is installed with <pip install pyautogui>.");
     try
     {
+        await App.WriteWarningAndLog(
+            $"Encountered error starting pythong script at: {pythonPathMain}."
+            + $"{Environment.NewLine}\tEnsure that python was added to PATH when installing."
+            + $"{Environment.NewLine}\tEnsure that pyttsx3 is installed with <pip install pyttsx3>."
+            + $"{Environment.NewLine}\tEnsure that pyautogui is installed with <pip install pyautogui>.");
         await App.WriteExceptionAndLog(e);
     }
     catch (Exception exc)
