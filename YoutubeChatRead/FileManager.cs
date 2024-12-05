@@ -26,7 +26,7 @@ public static class FileManager
     private static readonly string LogPath = Path.Join(DirectoryPath, LogPathRelative);
 
     private static string TemplateString =>
-        $"A : Word1 Word2 Word3 : Some Text To Speach{Environment.NewLine}B : \"Word with spaces\" \"CapItaliZATion doesn't MaTter\" : wow!{Environment.NewLine}C : ... 123 : ???";
+        $"KeyA : Word1 Word2 Word3 : Some Text To Speach{Environment.NewLine}ctrl + B : \"Word with spaces\" \"CapItaliZATion doesn't MaTter\" : wow!";
 
     public static string DirectoryPath =>
         Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), DIRECTORY_NAME);
